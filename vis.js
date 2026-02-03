@@ -7,8 +7,7 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 function createSVG(width, height){
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNS, 'svg');
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('width', width);
   svg.setAttribute('height', height);
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
@@ -17,8 +16,13 @@ function createSVG(width, height){
 
 function createBarChart(container){
 
-  const data = [40, 75, 25, 55, 90];
-  const labels = ['HTML','CSS','JS','SVG','Other'];
+  // Configurable chart labels
+  const chartTitle = 'Favorite ArtistsArtists I listed to the most in 2025';
+  const xAxisLabel = 'Favorite Artists';
+  const yAxisLabel = 'Hours';
+  
+  const data = [90, 75, 68, 55, 65];
+  const labels = ['Benson Boone','Alex Warren','Zara Larsson','Tate Mcrae','The Weekend'];
   const width = container.clientWidth || 800;
   const height = 320;
   const svg = createSVG(width, height);
@@ -53,7 +57,7 @@ function createBarChart(container){
     const val = Math.round((max/4)*t);
     const ty = height - padding - (t*(height-padding*2)/4);
     const ytext = document.createElementNS('http://www.w3.org/2000/svg','text');
-    ytext.setAttribute('x', 8);
+    ytext.setAttribute('x', 20);
     ytext.setAttribute('y', ty+4);
     ytext.setAttribute('font-size','11');
     ytext.setAttribute('fill','#444');
@@ -64,6 +68,37 @@ function createBarChart(container){
   
   
   container.appendChild(svg);
+
+  // Chart Title
+  const title = document.createElementNS('http://www.w3.org/2000/svg','text');
+  title.setAttribute('x', width / 2);
+  title.setAttribute('y', 20);
+  title.setAttribute('text-anchor', 'middle');
+  title.setAttribute('font-size', '16');
+  title.setAttribute('font-weight', 'bold');
+  title.textContent = chartTitle;
+  svg.appendChild(title);
+
+  // X-axis label
+  const xLabel = document.createElementNS('http://www.w3.org/2000/svg','text');
+  xLabel.setAttribute('x', width / 2);
+  xLabel.setAttribute('y', height - 5);
+  xLabel.setAttribute('text-anchor', 'middle');
+  xLabel.setAttribute('font-size', '12');
+  xLabel.setAttribute('font-weight', 'bold');
+  xLabel.textContent = xAxisLabel;
+  svg.appendChild(xLabel);
+
+  // Y-axis label
+  const yLabel = document.createElementNS('http://www.w3.org/2000/svg','text');
+  yLabel.setAttribute('x', -height / 2);
+  yLabel.setAttribute('y', 12);
+  yLabel.setAttribute('text-anchor', 'middle');
+  yLabel.setAttribute('font-size', '12');
+  yLabel.setAttribute('font-weight', 'bold');
+  yLabel.setAttribute('transform', 'rotate(-90)');
+  yLabel.textContent = yAxisLabel;
+  svg.appendChild(yLabel);
 }
 
 function createRadialArt(container){
