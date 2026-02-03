@@ -1,4 +1,4 @@
-// vis.js: generate SVG visualizations for visualizations.html
+// svg vis
 document.addEventListener('DOMContentLoaded', function(){
   const visContainer = document.getElementById('svg-vis');
   const artContainer = document.getElementById('svg-art');
@@ -16,7 +16,7 @@ function createSVG(width, height){
 }
 
 function createBarChart(container){
-  // Sample data (replace with your own data)
+
   const data = [40, 75, 25, 55, 90];
   const labels = ['HTML','CSS','JS','SVG','Other'];
   const width = container.clientWidth || 800;
@@ -48,7 +48,7 @@ function createBarChart(container){
     svg.appendChild(text);
   });
 
-  // Add y-axis labels
+  
   for(let t=0;t<=4;t++){
     const val = Math.round((max/4)*t);
     const ty = height - padding - (t*(height-padding*2)/4);
@@ -61,8 +61,8 @@ function createBarChart(container){
     svg.appendChild(ytext);
   }
 
-  // Clear and append
-  container.innerHTML = '';
+  
+  
   container.appendChild(svg);
 }
 
@@ -91,7 +91,7 @@ function createRadialArt(container){
     }
   }
 
-  // Add a center circle
+  
   const center = document.createElementNS('http://www.w3.org/2000/svg','circle');
   center.setAttribute('cx', cx);
   center.setAttribute('cy', cy);
