@@ -17,8 +17,8 @@ function createSVG(width, height){
 function createBarChart(container){
 
   // Configurable chart labels
-  const chartTitle = 'Favorite ArtistsArtists I listed to the most in 2025';
-  const xAxisLabel = 'Favorite Artists';
+  const chartTitle = 'Artists I listend to the most in 2025';
+  const xAxisLabel = 'Top 5 Artists';
   const yAxisLabel = 'Hours';
   
   const data = [90, 75, 68, 55, 65];
