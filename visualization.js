@@ -16,7 +16,7 @@ function createSVG(width, height){
 
 function createBarChart(container){
 
-  // Configurable chart labels
+  // chart labels
   const chartTitle = 'Artists I listend to the most in 2025';
   const xAxisLabel = 'Top 5 Artists';
   const yAxisLabel = 'Hours';
