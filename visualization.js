@@ -137,4 +137,19 @@ function createRadialArt(container){
 
   container.innerHTML = '';
   container.appendChild(svg);
+
+  // Add hover ripple effect
+  container.addEventListener('mouseover', function(){
+    const ripple = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    ripple.setAttribute('cx', cx);
+    ripple.setAttribute('cy', cy);
+    ripple.setAttribute('r', 0);
+    ripple.setAttribute('fill', 'none');
+    ripple.setAttribute('stroke', `hsla(180,100%,50%,0.8)`);
+    ripple.setAttribute('stroke-width', 2);
+    ripple.setAttribute('class', 'ripple-circle');
+    svg.appendChild(ripple);
+    
+    setTimeout(() => ripple.remove(), 800);
+  });
 }
