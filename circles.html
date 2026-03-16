@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Circle Canvas — Jay Ho</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --border: #e0e0e0;
+      --text: #111111;
+      --muted: #888888;
+      --accent: #c8f04a;
+      --accent2: #f04a8a;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 60px;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 860px;
+      background: var(--surface);
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+    }
+
+    .hud {
+      width: 100%;
+      max-width: 860px;
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .counter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .counter .dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .counter .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .dot.filled {
+      border-color: #333;
+      background: #333;
+    }
+
+    .hint {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .hint kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: var(--surface);
+      font-family: inherit;
+      font-size: 0.65rem;
+    }
+
+    .flash-msg {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent2);
+      color: #fff;
+      font-size: 0.7rem;
+      font-family: inherit;
+      letter-spacing: 0.05em;
+      padding: 6px 16px;
+      border-radius: 2px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .flash-msg.show { opacity: 1; }
+
+    .site-header {
+      width: 100%;
+      background: white;
+      border-bottom: 1px solid #e6e6e6;
+      margin-bottom: 20px;
+    }
+
+    .header-nav {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .header-nav a {
+      color: #2b7a78;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .header-nav a:hover {
+      text-decoration: underline;
+    }
+
+    .header-nav .logo {
+      font-weight: bold;
+      color: #111;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-nav">
+    <a href="index.html" class="logo">Jay Ho</a>
+    <a href="index.html">Home</a>
+    <a href="visualizations.html">Visualizations</a>
+    <a href="circles.html">Circle Canvas</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</header>
+
+<div class="canvas-wrapper" id="canvas-wrap">
+  <div class="flash-msg" id="flash">MAX 10 CIRCLES REACHED</div>
+</div>
+
+<div class="hud">
+  <div class="counter">
+    <span id="count-label">0 / 10</span>
+  </div>
+  <div class="hint">
+    <kbd>R</kbd> reset
+  </div>
+</div>
+
+<script type="module">
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+// ── Config ────────────────────────────────────────────────────────────────────
+const MAX_CIRCLES = 10;
+const PALETTE = [
+  "#c8f04a","#f04a8a","#4af0c8","#f0c84a","#4a8af0",
+  "#f08a4a","#8af04a","#c84af0","#4af08a","#f04a4a"
+];
+
+// ── SVG setup ─────────────────────────────────────────────────────────────────
+const wrap = document.getElementById("canvas-wrap");
+const W = 860, H = 540;
+
+const svg = d3.select("#canvas-wrap")
+  .append("svg")
+  .attr("viewBox", `0 0 ${W} ${H}`)
+  .attr("preserveAspectRatio", "xMidYMid meet");
+
+// Defs: radial gradient for glow
+const defs = svg.append("defs");
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let circles = [];   // { id, x, y, r, color }
+let nextId = 0;
+
+// ── HUD dots ──────────────────────────────────────────────────────────────────
+const countLabel = document.getElementById("count-label");
+
+function updateHUD() {
+  countLabel.textContent = `${circles.length} / 10`;
+}
+
+// ── Flash message ─────────────────────────────────────────────────────────────
+let flashTimer;
+function flashMax() {
+  const el = document.getElementById("flash");
+  el.classList.add("show");
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => el.classList.remove("show"), 1200);
+}
+
+
+
+// ── Draw function ─────────────────────────────────────────────────────────────
+function render() {
+  // Bind data
+  const sel = svg.selectAll("g.circle-group")
+    .data(circles, d => d.id);
+
+  // EXIT
+  sel.exit()
+    .each(function() {
+      d3.select(this).select("circle.main")
+        .transition().duration(300)
+        .attr("r", 0)
+        .style("opacity", 0);
+    })
+    .transition().duration(320).remove();
+
+  // ENTER
+  const enter = sel.enter()
+    .append("g")
+    .attr("class", "circle-group")
+    .style("cursor", "pointer");
+
+  // Ripple circle (behind)
+  enter.append("circle")
+    .attr("class", "ripple")
+    .attr("cx", d => d.x)
+    .attr("cy", d => d.y)
+    .attr("r", d => d.r)
+    .attr("fill", "none")
+    .attr("stroke", d => d.color)
+    .attr("stroke-width", 2)
+    .style("opacity", 0.8)
+    .transition().duration(700).ease(d3.easeCubicOut)
+    .attr("r", d => d.r * 3.5)
+    .attr("stroke-width", 0.5)
+    .style("opacity", 0)
+    .remove();
+
+  // Main circle
+  enter.append("circle")
+    .attr("class", "main")
+    .attr("cx", d => d.x)
+    .attr("cy", d => d.y)
+    .attr("r", 0)
+    .attr("fill", "black")
+    .transition().duration(500).ease(d3.easeElasticOut.amplitude(1).period(0.4))
+    .attr("r", d => d.r);
+
+  updateHUD();
+}
+
+// ── Add / Remove ──────────────────────────────────────────────────────────────
+function addCircle(x, y) {
+  if (circles.length >= MAX_CIRCLES) { flashMax(); return; }
+
+  const color = PALETTE[nextId % PALETTE.length];
+  const r = Math.random() * 22 + 14;   // 14–36 px
+  circles.push({ id: nextId++, x, y, r, color });
+  render();
+}
+
+function removeCircle(id) {
+  circles = circles.filter(c => c.id !== id);
+  render();
+}
+
+// ── Click on SVG ──────────────────────────────────────────────────────────────
+svg.on("click", function(event) {
+  const [x, y] = d3.pointer(event, this);
+  addCircle(x, y);
+});
+
+// ── Keyboard reset ────────────────────────────────────────────────────────────
+document.addEventListener("keydown", e => {
+  if (e.key === "r" || e.key === "R") {
+    circles = [];
+    svg.selectAll("g.circle-group").remove();
+    updateHUD();
+  }
+});
+
+// ── Initial render ────────────────────────────────────────────────────────────
+updateHUD();
+</script>
+</body>
+</html>

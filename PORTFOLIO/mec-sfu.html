@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MEC x SFU — Jay Ho</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:    #1a1a18;
+      --muted:  #6b6860;
+      --accent: #C8A96E;
+      --blue:   #6B8FAE;
+      --font:   -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #D4D8E0;
+      color: var(--ink);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      cursor: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* BG MESH */
+    .bg-mesh {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 20%, rgba(195,205,225,0.65) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 70% at 90% 10%, rgba(180,195,220,0.4)  0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 50% 90%, rgba(185,200,215,0.45) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 70%, rgba(195,200,230,0.35) 0%, transparent 55%),
+        #D4D8E0;
+    }
+
+    /* CURSOR */
+    #cursor {
+      position: fixed; width: 8px; height: 8px;
+      background: var(--ink); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: width .25s ease, height .25s ease, opacity .25s ease;
+    }
+    #cursor.hover { width: 36px; height: 36px; opacity: .12; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 48px;
+      border-bottom: 1px solid transparent;
+      transition: all .4s ease;
+    }
+    nav.scrolled {
+      padding: 18px 48px;
+      background: rgba(212,216,224,0.7);
+      backdrop-filter: blur(24px) saturate(1.5);
+      -webkit-backdrop-filter: blur(24px) saturate(1.5);
+      border-bottom: 1px solid rgba(255,255,255,0.55);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+    }
+    .nav-links { display: flex; gap: 32px; list-style: none; text-align: left; align-items: center; }
+    .nav-links li { display: flex; align-items: center; }
+    .nav-links a {
+      font-size: 13px; font-weight: 400;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      transition: color .2s;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .nav-links a:hover { color: var(--ink); }
+    nav > a {
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .3s ease;
+    }
+    nav > a:hover { transform: scale(1.12); }
+
+    /* GLASS UTILITY */
+    .glass {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(4px) saturate(1.1);
+      -webkit-backdrop-filter: blur(4px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35);
+      border-radius: 20px;
+    }
+
+    /* PAGE WRAPPER */
+    .page {
+      position: relative; z-index: 1;
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 48px 120px;
+    }
+
+    /* HERO HEADER */
+    .project-hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+    .project-hero-card {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(4px) saturate(1.1);
+      -webkit-backdrop-filter: blur(4px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 4px 32px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35);
+      border-radius: 24px;
+      padding: 52px 80px 56px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .project-hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      transition: color .2s;
+      opacity: 0; animation: fadeUp .6s ease .1s forwards;
+    }
+    .back-link svg { transition: transform .2s; }
+    .back-link:hover { color: var(--ink); }
+    .back-link:hover svg { transform: translateX(-3px); }
+    .project-tag {
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0; animation: fadeUp .6s ease .15s forwards;
+    }
+    .project-title {
+      font-size: clamp(44px, 7vw, 100px);
+      font-weight: 200; letter-spacing: -0.04em;
+      line-height: 1.0;
+      opacity: 0; animation: fadeUp .9s cubic-bezier(0.16,1,0.3,1) .25s forwards;
+    }
+    .project-title .blue { color: var(--blue); }
+    .project-subtitle {
+      font-size: clamp(16px, 1.8vw, 22px);
+      font-weight: 300; color: var(--muted);
+      letter-spacing: -0.01em; max-width: 640px;
+      opacity: 0; animation: fadeUp .7s ease .5s forwards;
+    }
+    .project-meta-row {
+      display: flex; gap: 48px; flex-wrap: wrap;
+      padding-top: 24px;
+      border-top: 1px solid rgba(0,0,0,0.07);
+      opacity: 0; animation: fadeUp .7s ease .65s forwards;
+    }
+    .meta-item { display: flex; flex-direction: column; gap: 4px; }
+    .meta-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .meta-value { font-size: 14px; font-weight: 400; }
+
+    /* HERO FOOTER BAR */
+    .hero-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 22px 0; border-top: 1px solid rgba(0,0,0,0.08);
+      opacity: 0; animation: fadeUp .7s ease .8s forwards;
+    }
+    .hero-footer-left { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .scroll-hint { display: flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .scroll-line { width: 40px; height: 1px; background: rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+    .scroll-line::after { content: ''; position: absolute; inset: 0; background: var(--ink); animation: scanLine 2s ease-in-out 1.5s infinite; }
+
+    /* COVER IMAGE */
+    .cover-wrap {
+      position: relative; z-index: 1;
+      padding: 0 48px;
+      margin-bottom: 80px;
+      opacity: 0; animation: fadeUp .9s ease .9s forwards;
+    }
+    .cover-img {
+      width: 100%; border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+      aspect-ratio: 16/7;
+      background: rgba(30,50,35,0.85);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cover-img img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 20px; }
+
+    /* CONTENT SECTIONS */
+    .content {
+      position: relative; z-index: 1;
+      padding: 0 48px;
+      display: flex; flex-direction: column; gap: 24px;
+    }
+
+    /* SECTION LABEL */
+    .section-label {
+      font-size: 11px; font-weight: 400;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 32px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .section-label::before { content: ''; display: block; width: 20px; height: 1px; background: var(--muted); }
+    .content > .section-label { margin-top: 40px; }
+    .content > .section-label:first-child { margin-top: 0; }
+
+    /* CONTENT CARD */
+    .content-card {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(4px) saturate(1.1);
+      -webkit-backdrop-filter: blur(4px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35);
+      border-radius: 20px;
+      padding: 48px 56px;
+      opacity: 0; transform: translateY(24px);
+    }
+    .content-card.visible { animation: fadeUp .8s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+    /* TWO COL */
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    .three-col {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;
+    }
+
+    /* TYPOGRAPHY */
+    .card-eyebrow {
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 16px;
+    }
+    .card-heading {
+      font-size: clamp(24px, 3vw, 40px);
+      font-weight: 200; letter-spacing: -0.03em;
+      line-height: 1.15; margin-bottom: 20px;
+    }
+    .card-heading .blue { color: var(--blue); }
+    .card-body {
+      font-size: 15px; font-weight: 300;
+      color: var(--muted); line-height: 1.75;
+    }
+    .card-body + .card-body { margin-top: 16px; }
+
+    /* STAT CARD */
+    .stat-num {
+      font-size: clamp(40px, 5vw, 64px);
+      font-weight: 200; letter-spacing: -0.04em;
+      line-height: 1; color: var(--blue);
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.5;
+    }
+
+    /* IMAGE CARD */
+    .img-card {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(4px) saturate(1.1);
+      -webkit-backdrop-filter: blur(4px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35);
+      border-radius: 20px; overflow: hidden;
+      aspect-ratio: 4/3;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transform: translateY(24px);
+    }
+    .img-card.visible { animation: fadeUp .8s cubic-bezier(0.16,1,0.3,1) forwards; }
+    .img-card img { width: 100%; height: 100%; object-fit: cover; }
+    .img-placeholder {
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(0,0,0,.22); border: 1.5px dashed rgba(0,0,0,.14);
+      padding: 8px 18px; border-radius: 100px;
+    }
+    .img-card-wide { aspect-ratio: 16/9; }
+
+    /* TAG PILL */
+    .pill {
+      display: inline-block; font-size: 11px; letter-spacing: 0.06em;
+      text-transform: uppercase; background: rgba(0,0,0,0.07);
+      border-radius: 100px; padding: 4px 12px; color: var(--muted);
+      margin-right: 8px; margin-bottom: 8px;
+    }
+
+    /* DIVIDER */
+    .divider {
+      height: 1px; background: rgba(0,0,0,0.07);
+      margin: 28px 0;
+    }
+
+    /* NEXT PROJECT */
+    .next-project {
+      position: relative; z-index: 1;
+      padding: 80px 48px 120px;
+    }
+    .next-card {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(4px) saturate(1.1);
+      -webkit-backdrop-filter: blur(4px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35);
+      border-radius: 24px;
+      padding: 48px 56px;
+      display: flex; justify-content: space-between; align-items: center;
+      text-decoration: none; color: inherit;
+      transition: transform .4s cubic-bezier(0.16,1,0.3,1), background .3s;
+      opacity: 0; transform: translateY(24px);
+    }
+    .next-card.visible { animation: fadeUp .8s cubic-bezier(0.16,1,0.3,1) forwards; }
+    .next-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.2); }
+    .next-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .next-title { font-size: clamp(28px, 4vw, 52px); font-weight: 200; letter-spacing: -0.03em; }
+    .next-arrow {
+      flex-shrink: 0; width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.75);
+      backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;
+      transition: background .3s, transform .3s;
+    }
+    .next-card:hover .next-arrow { background: var(--ink); transform: rotate(45deg); }
+    .next-card:hover .next-arrow path { stroke: white; }
+
+    /* FOOTER */
+    footer {
+      position: relative; z-index: 1;
+      padding: 28px 48px;
+      border-top: 1px solid rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+    }
+    .footer-left { font-size: 14px; font-weight: 300; color: var(--muted); }
+    .footer-links { display: flex; gap: 24px; list-style: none; }
+    .footer-links a { font-size: 13px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; transition: color .2s; }
+    .footer-links a:hover { color: var(--ink); }
+    .footer-right { font-size: 12px; color: var(--muted); }
+
+    /* SIDEBAR NAV */
+    .sidebar-nav {
+      position: fixed; top: 120px;
+      left: 0; right: auto; z-index: 150;
+      display: flex; flex-direction: column; gap: 0;
+      align-items: flex-start;
+      opacity: 0; pointer-events: none;
+      transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      padding-left: 24px;
+      width: auto;
+      text-align: left;
+    }
+    .sidebar-nav.show { opacity: 1; pointer-events: all; }
+    .sidebar-link {
+      display: inline-flex; flex-direction: row; align-items: flex-start; gap: 10px;
+      text-decoration: none; color: var(--muted);
+      font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 7px 0; transition: color .2s;
+      text-align: left;
+      justify-content: flex-start;
+      white-space: nowrap;
+    }
+    .sidebar-link::before {
+      content: ''; display: inline-block; flex-shrink: 0;
+      width: 14px; height: 1px; background: currentColor;
+      transition: width .25s ease;
+      margin-top: 5px;
+      margin-right: 0;
+    }
+    .sidebar-link.active { color: var(--ink); }
+    .sidebar-link.active::before { width: 28px; }
+    .sidebar-link:hover { color: var(--ink); }
+    .section-label[id] { scroll-margin-top: 100px; }
+    @media (max-width: 1200px) { .sidebar-nav { display: none; } }
+    @media (min-width: 1201px) {
+      .cover-wrap { padding-left: 240px; padding-right: 240px; }
+      .content { padding-left: 240px; padding-right: 240px; }
+      .next-project { padding-left: 240px !important; padding-right: 240px !important; }
+    }
+
+    @keyframes fadeUp  { to { opacity: 1; transform: translateY(0); } }
+    @keyframes scanLine { 0% { transform: translateX(-100%); } 50% { transform: translateX(100%); } 100% { transform: translateX(100%); } }
+
+    @media (max-width: 768px) {
+      nav, nav.scrolled { padding: 18px 24px; }
+      .project-hero-card { padding: 40px 28px 44px; }
+      .cover-wrap, .content, .next-project { padding-left: 24px; padding-right: 24px; }
+      .two-col, .three-col { grid-template-columns: 1fr; }
+      footer { padding: 28px 24px; }
+      .next-card { padding: 36px 32px; }
+      .content-card { padding: 36px 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-mesh"></div>
+  <div id="cursor"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <a href="index.html" aria-label="Jay Ho">
+      <svg width="22" height="50" viewBox="0 0 35 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M20.8651 0H13.9639V33.9625H6.9012V3.73333H0V69.0517H6.9012V40.0861H13.9639V46.17C13.9639 53.4923 12.7975 61.3008 10.4647 69.5952L7.54867 79.8011H14.6443L17.6575 69.5952C19.7959 62.208 20.8651 54.3669 20.8651 46.0728V40.0861H27.702V69.0517H34.6667V3.73333H27.702V33.9625H20.8651V0Z" fill="#1a1a18"/>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li><a href="work.html">Work</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- SIDEBAR NAV -->
+  <nav class="sidebar-nav" id="sidebar-nav">
+    <a href="#overview" class="sidebar-link">Overview</a>
+    <a href="#problem" class="sidebar-link">Problem</a>
+    <a href="#contribution" class="sidebar-link">Contribution</a>
+    <a href="#design" class="sidebar-link">Design Process</a>
+    <a href="#solution" class="sidebar-link">Solution</a>
+    <a href="#reflection" class="sidebar-link">Reflection</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" style="position:relative;z-index:1;display:flex;flex-direction:column;padding:0 48px;overflow:hidden;">
+    <div style="display:flex;flex-direction:column;padding-top:clamp(120px,15vh,150px);">
+      <div class="project-hero-card" style="margin-bottom:20px;">
+        <div class="project-hero-top">
+          <a href="work.html" class="back-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M3 8L8 3M3 8L8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back to work
+          </a>
+          <span class="project-tag">UX · Mobile App · 2025</span>
+        </div>
+        <h1 class="project-title">MEC <span class="blue">×</span> SFU</h1>
+        <p class="project-subtitle">Design Solutions for Mountain Equipment Company — reimagining the community and events experience for outdoor enthusiasts.</p>
+        <div class="project-meta-row">
+          <div class="meta-item">
+            <span class="meta-label">Role</span>
+            <span class="meta-value">UI</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Duration</span>
+            <span class="meta-value">12 Weeks</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Team</span>
+            <span class="meta-value">SFU IAT Students</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Tools</span>
+            <span class="meta-value">Figma · Research</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-footer">
+      <span class="hero-footer-left">Jay Ho &nbsp;·&nbsp; Vancouver, BC</span>
+      <div class="scroll-hint">
+        <div class="scroll-line"></div>
+        Scroll
+      </div>
+    </div>
+  </section>
+
+  <!-- COVER IMAGE -->
+  <div class="cover-wrap">
+    <div class="cover-img">
+      <img src="/mnt/user-data/uploads/5_-_Workshop_Agenda.png" alt="MEC x SFU mockup screens">
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="section-label" id="overview">Overview</div>
+    <div class="content-card" id="overview">
+      <p class="card-eyebrow">The project</p>
+      <h2 class="card-heading">Redesigning <span class="blue">community</span> for MEC.</h2>
+      <p class="card-body">A 12-week SFU IAT collaboration to reimagine the community and events experience for Mountain Equipment Company — connecting outdoor enthusiasts with local activities that match their gear, skill level, and interests.</p>
+      <p class="card-body">My role spanned the full design process: research synthesis, concept exploration, high-fidelity prototyping, and presenting findings to MEC's product and marketing team.</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="three-col">
+      <div class="content-card">
+        <div class="stat-num">78%</div>
+        <div class="stat-label">Of MEC users were unaware of local events happening near them</div>
+      </div>
+      <div class="content-card">
+        <div class="stat-num">3×</div>
+        <div class="stat-label">More likely to return to a store when community connection is felt</div>
+      </div>
+      <div class="content-card">
+        <div class="stat-num">12</div>
+        <div class="stat-label">Weeks of research, prototyping, and iteration with real users</div>
+      </div>
+    </div>
+
+    <!-- PROBLEM -->
+    <div class="section-label" id="problem">Problem</div>
+    <div class="content-card">
+      <p class="card-eyebrow">The challenge</p>
+      <h2 class="card-heading">A loyal community with <span class="blue">no digital home.</span></h2>
+      <p class="card-body">Mountain Equipment Company has an incredibly loyal customer base of outdoor enthusiasts — but their digital experience failed to reflect that community energy. Events were hard to discover, registration was clunky, and there was no way to connect with other members who shared your interests.</p>
+      <p class="card-body">As part of a 12-week SFU IAT collaboration, our team was challenged to redesign the MEC app's community and events layer — from discovery all the way to post-event engagement.</p>
+    </div>
+
+    <!-- RESEARCH & INSIGHTS -->
+    <div class="section-label" id="contribution">Contribution & Insights</div>
+    <div class="content-card">
+      <p class="card-eyebrow">Research</p>
+      <h2 class="card-heading">Understanding the <span class="blue">outdoor community.</span></h2>
+      <p class="card-body">We started with contextual interviews across 14 MEC members ranging from casual hikers to serious climbers. The consistent thread: people wanted to do more with MEC, but the app made them feel like a customer, not a community member.</p>
+      <div class="divider"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+        <span class="pill">8 Interviews</span>
+        <span class="pill">Employee Discussions</span>
+        <span class="pill">In Store Survey</span>
+        <span class="pill">Journey Mapping</span>
+      </div>
+      <p class="card-body">Key insight: the biggest friction wasn't awareness — it was trust. Users didn't know who was organizing events, what skill level was expected, or whether their gear was appropriate. Reducing uncertainty became our north star.</p>
+    </div>
+
+    <!-- PROCESS IMAGES -->
+    <div class="two-col">
+      <div class="img-card">
+        <img src="MEC RESEARCH 1.png" alt="MEC Research">
+      </div>
+      <div class="img-card">
+        <img src="MEC RESEARCH 2.png" alt="Journey Map">
+      </div>
+    </div>
+
+    <!-- DESIGN PROCESS -->
+    <div class="section-label" id="design">Design Process</div>
+    <div class="content-card">
+      <p class="card-eyebrow">Design Process</p>
+      <h2 class="card-heading">From <span class="blue">insight</span> to interface.</h2>
+      <p class="card-body">We explored three distinct directions in lo-fi: a social-first feed model, a map-based discovery model, and a curated editorial model. Through two rounds of testing we landed on a hybrid — map-based discovery with editorial curation for trust-building.</p>
+      <p class="card-body">The final design introduced contextual event cards with gear recommendations, organizer profiles, and a lightweight social layer that let attendees connect before showing up.</p>
+    </div>
+
+    <!-- FULL WIDTH IMAGE -->
+    <div class="img-card img-card-wide" style="border-radius:20px;">
+      <img src="/mnt/user-data/uploads/5_-_Workshop_Agenda.png" alt="MEC app screens">
+    </div>
+
+    <!-- SOLUTION -->
+    <div class="section-label" id="solution">Solution</div>
+    <div class="two-col">
+      <div class="content-card">
+        <p class="card-eyebrow">Solution</p>
+        <h2 class="card-heading" style="font-size:clamp(20px,2.4vw,32px);">Event discovery that <span class="blue">builds confidence.</span></h2>
+        <p class="card-body">A smart events feed that surfaces relevant activities based on your gear, skill level, and location — no more scrolling through irrelevant listings.</p>
+      </div>
+      <div class="content-card">
+        <p class="card-eyebrow">Impact</p>
+        <h2 class="card-heading" style="font-size:clamp(20px,2.4vw,32px);">Presented to <span class="blue">MEC stakeholders.</span></h2>
+        <p class="card-body">The final prototype was presented to MEC's product and marketing team. The event card concept and gear-matching feature were flagged as immediate opportunities for their 2025 roadmap.</p>
+      </div>
+    </div>
+
+    <!-- REFLECTION -->
+    <div class="section-label" id="reflection">Reflection</div>
+    <div class="content-card">
+      <p class="card-eyebrow">Reflection</p>
+      <h2 class="card-heading">What I'd <span class="blue">do differently.</span></h2>
+      <p class="card-body">I'd spend more time in the research phase validating our assumption that gear anxiety was the primary barrier — our sample skewed toward experienced users, and beginners likely had a very different set of fears. More divergent testing in lo-fi would have caught this earlier.</p>
+      <p class="card-body">That said, shipping a prototype that sparked a real product conversation at a company like MEC was a genuine reminder that good design doesn't just look right — it has to land in the right room at the right time.</p>
+    </div>
+
+  </div>
+
+  <!-- NEXT PROJECT -->
+  <div class="next-project">
+    <div class="section-label">Next Project</div>
+    <a href="dutch-design-awards.html" class="next-card" id="next-card">
+      <div>
+        <div class="next-label">Up next</div>
+        <div class="next-title">Dutch Design Awards</div>
+      </div>
+      <div class="next-arrow">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13L13 3M13 3H6M13 3V10" stroke="#1a1a18" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">Jay Ho — 2025</div>
+    <ul class="footer-links">
+      <li><a href="mailto:jayho5403@gmail.com">Email</a></li>
+      <li><a href="https://www.linkedin.com/in/jay-ho-520134220/" target="_blank">LinkedIn</a></li>
+      <li><a href="resume.html">Resume</a></li>
+    </ul>
+    <div class="footer-right">Designed with intention.</div>
+  </footer>
+
+  <script>
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, .next-card').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 100);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.content-card, .img-card, .next-card').forEach(el => observer.observe(el));
+
+    // SIDEBAR SCROLLSPY
+    const sidebarNav = document.getElementById('sidebar-nav');
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const sections = document.querySelectorAll('.section-label[id]');
+
+    const heroEl = document.querySelector('.hero');
+    if (heroEl) {
+      new IntersectionObserver(([e]) => {
+        sidebarNav.classList.toggle('show', !e.isIntersecting);
+      }, { threshold: 0.1 }).observe(heroEl);
+    }
+
+    const secObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          sidebarLinks.forEach(l => l.classList.remove('active'));
+          const link = document.querySelector(`.sidebar-link[href="#${entry.target.id}"]`);
+          if (link) link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-15% 0px -75% 0px' });
+    sections.forEach(s => secObserver.observe(s));
+  </script>
+</body>
+</html>

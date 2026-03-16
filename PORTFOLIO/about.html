@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Jay Ho</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:    #1a1a18;
+      --muted:  #6b6860;
+      --accent: #C8A96E;
+      --blue:   #6B8FAE;
+      --font:   -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #D4D8E0;
+      color: var(--ink);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      cursor: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .bg-mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 20%, rgba(195,205,225,0.65) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 70% at 90% 10%, rgba(180,195,220,0.4)  0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 50% 90%, rgba(185,200,215,0.45) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 70%, rgba(195,200,230,0.35) 0%, transparent 55%),
+        #D4D8E0;
+    }
+
+    #cursor { position: fixed; width: 8px; height: 8px; background: var(--ink); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width .25s ease, height .25s ease, opacity .25s ease; }
+    #cursor.hover { width: 36px; height: 36px; opacity: .12; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; border-bottom: 1px solid transparent; transition: all .4s ease; }
+    nav.scrolled { padding: 18px 48px; background: rgba(212,216,224,0.7); backdrop-filter: blur(24px) saturate(1.5); -webkit-backdrop-filter: blur(24px) saturate(1.5); border-bottom: 1px solid rgba(255,255,255,0.55); box-shadow: 0 1px 0 rgba(0,0,0,0.04); }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a { font-size: 13px; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-links a.active { color: var(--ink); }
+    nav > a { display: flex; align-items: center; justify-content: center; transition: transform .3s ease; }
+    nav > a:hover { transform: scale(1.12); }
+
+    /* HERO */
+    .hero { position: relative; z-index: 1; display: flex; flex-direction: column; padding: 0 48px; overflow: hidden; }
+    .hero-inner { display: flex; flex-direction: column; padding-top: clamp(120px, 15vh, 150px); }
+    .project-hero-card { background: rgba(255,255,255,0.2); backdrop-filter: blur(4px) saturate(1.1); -webkit-backdrop-filter: blur(4px) saturate(1.1); border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 4px 32px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35); border-radius: 24px; padding: 52px 80px 56px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 32px; }
+    .project-tag { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); opacity: 0; animation: fadeUp .6s ease .15s forwards; }
+    .project-title { font-size: clamp(44px, 7vw, 100px); font-weight: 200; letter-spacing: -0.04em; line-height: 1.0; opacity: 0; animation: fadeUp .9s cubic-bezier(0.16,1,0.3,1) .25s forwards; }
+    .project-title .blue { color: var(--blue); }
+    .project-subtitle { font-size: clamp(16px, 1.8vw, 22px); font-weight: 300; color: var(--muted); letter-spacing: -0.01em; max-width: 640px; opacity: 0; animation: fadeUp .7s ease .5s forwards; }
+
+    .hero-footer { display: flex; justify-content: space-between; align-items: center; padding: 22px 0; border-top: 1px solid rgba(0,0,0,0.08); opacity: 0; animation: fadeUp .7s ease .8s forwards; }
+    .hero-footer-left { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .scroll-hint { display: flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .scroll-line { width: 40px; height: 1px; background: rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+    .scroll-line::after { content: ''; position: absolute; inset: 0; background: var(--ink); animation: scanLine 2s ease-in-out 1.5s infinite; }
+
+    /* CONTENT */
+    .content { position: relative; z-index: 1; padding: 80px 48px 0; display: flex; flex-direction: column; gap: 24px; }
+
+    .section-label { font-size: 11px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 32px; display: flex; align-items: center; gap: 14px; }
+    .section-label::before { content: ''; display: block; width: 20px; height: 1px; background: var(--muted); }
+
+    .content-card { background: rgba(255,255,255,0.2); backdrop-filter: blur(4px) saturate(1.1); -webkit-backdrop-filter: blur(4px) saturate(1.1); border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 4px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35); border-radius: 20px; padding: 48px 56px; opacity: 0; transform: translateY(24px); }
+    .content-card.visible { animation: fadeUp .8s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+
+    .card-eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    .card-heading { font-size: clamp(24px, 3vw, 40px); font-weight: 200; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 20px; }
+    .card-heading .blue { color: var(--blue); }
+    .card-body { font-size: 15px; font-weight: 300; color: var(--muted); line-height: 1.75; }
+    .card-body + .card-body { margin-top: 16px; }
+
+    .divider { height: 1px; background: rgba(0,0,0,0.07); margin: 28px 0; }
+
+    .pill { display: inline-block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(0,0,0,0.07); border-radius: 100px; padding: 4px 12px; color: var(--muted); margin-right: 8px; margin-bottom: 8px; }
+
+    /* PORTRAIT CARD */
+    .portrait-card { background: rgba(255,255,255,0.2); backdrop-filter: blur(4px) saturate(1.1); -webkit-backdrop-filter: blur(4px) saturate(1.1); border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 4px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35); border-radius: 20px; overflow: hidden; min-height: 400px; opacity: 0; transform: translateY(24px); }
+    .portrait-card.visible { animation: fadeUp .8s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+    /* STAT */
+    .stat-num { font-size: clamp(36px, 5vw, 64px); font-weight: 200; letter-spacing: -0.04em; line-height: 1; margin-bottom: 8px; color: var(--blue); }
+    .stat-label { font-size: 13px; font-weight: 300; color: var(--muted); line-height: 1.55; }
+
+    /* LIST */
+    .info-list { list-style: none; }
+    .info-list li { padding: 16px 0; border-bottom: 1px solid rgba(0,0,0,0.07); display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+    .info-list li:last-child { border-bottom: none; }
+    .info-list .lbl { color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .info-list .val { font-weight: 400; text-align: right; max-width: 60%; }
+    .info-list a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); }
+
+    /* CTA */
+    .about-cta { margin-top: 32px; display: inline-flex; align-items: center; gap: 10px; padding: 13px 24px; background: rgba(26,26,24,0.88); color: white; border-radius: 100px; font-size: 14px; font-weight: 400; letter-spacing: -0.01em; text-decoration: none; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.12); transition: background .3s, gap .3s; cursor: none; }
+    .about-cta:hover { background: rgba(50,50,48,0.92); gap: 16px; }
+
+    /* NEXT */
+    .next-project { position: relative; z-index: 1; padding: 80px 48px 120px; }
+    .next-card { background: rgba(255,255,255,0.2); backdrop-filter: blur(4px) saturate(1.1); -webkit-backdrop-filter: blur(4px) saturate(1.1); border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 4px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35); border-radius: 24px; padding: 48px 56px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; transition: transform .4s cubic-bezier(0.16,1,0.3,1), background .3s; opacity: 0; transform: translateY(24px); }
+    .next-card.visible { animation: fadeUp .8s cubic-bezier(0.16,1,0.3,1) forwards; }
+    .next-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.2); }
+    .next-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .next-title { font-size: clamp(28px, 4vw, 52px); font-weight: 200; letter-spacing: -0.03em; }
+    .next-arrow { flex-shrink: 0; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.75); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; transition: background .3s, transform .3s; }
+    .next-card:hover .next-arrow { background: var(--ink); transform: rotate(45deg); }
+    .next-card:hover .next-arrow path { stroke: white; }
+
+    footer { position: relative; z-index: 1; padding: 28px 48px; border-top: 1px solid rgba(255,255,255,0.55); background: rgba(255,255,255,0.2); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+    .footer-left { font-size: 14px; font-weight: 300; color: var(--muted); }
+    .footer-links { display: flex; gap: 24px; list-style: none; }
+    .footer-links a { font-size: 13px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; transition: color .2s; }
+    .footer-links a:hover { color: var(--ink); }
+    .footer-right { font-size: 12px; color: var(--muted); }
+
+    @keyframes fadeUp  { to { opacity: 1; transform: translateY(0); } }
+    @keyframes scanLine { 0% { transform: translateX(-100%); } 50% { transform: translateX(100%); } 100% { transform: translateX(100%); } }
+
+    @media (max-width: 768px) {
+      nav, nav.scrolled { padding: 18px 24px; }
+      .hero { padding: 0 24px; }
+      .project-hero-card { padding: 40px 28px 44px; }
+      .content { padding: 40px 24px 0; }
+      .two-col, .three-col { grid-template-columns: 1fr; }
+      .next-project { padding: 80px 24px 120px; }
+      .next-card { padding: 36px 32px; }
+      .content-card { padding: 36px 32px; }
+      footer { padding: 28px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-mesh"></div>
+  <div id="cursor"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <a href="index.html" aria-label="Jay Ho">
+      <svg width="22" height="50" viewBox="0 0 35 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M20.8651 0H13.9639V33.9625H6.9012V3.73333H0V69.0517H6.9012V40.0861H13.9639V46.17C13.9639 53.4923 12.7975 61.3008 10.4647 69.5952L7.54867 79.8011H14.6443L17.6575 69.5952C19.7959 62.208 20.8651 54.3669 20.8651 46.0728V40.0861H27.702V69.0517H34.6667V3.73333H27.702V33.9625H20.8651V0Z" fill="#1a1a18"/>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li><a href="work.html">Work</a></li>
+      <li><a href="about.html" class="active">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="project-hero-card">
+        <span class="project-tag">Designer · Vancouver, BC</span>
+        <h1 class="project-title">About <span class="blue">Jay</span></h1>
+        <p class="project-subtitle">Product Designer obsessed with the gap between good and great.</p>
+      </div>
+    </div>
+    <div class="hero-footer">
+      <span class="hero-footer-left">Jay Ho &nbsp;·&nbsp; Vancouver, BC</span>
+      <div class="scroll-hint">
+        <div class="scroll-line"></div>
+        Scroll
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- BIO + PORTRAIT -->
+    <div class="two-col" style="align-items: stretch;">
+      <div class="content-card" style="height: 100%;">
+        <p class="card-eyebrow">Who I am</p>
+        <h2 class="card-heading">Fixing the <span class="blue">"could've been great"</span> in the world.</h2>
+        <p class="card-body">I'm Jay Ho — a Product Designer based in Vancouver, BC. I believe the difference between a frustrating product and a beloved one is almost always a design decision someone didn't care enough to get right.</p>
+        <p class="card-body">I work at the intersection of research, systems thinking, and craft. I ask "why" too many times and iterate until it feels inevitable. Life's too short for bad design.</p>
+        <p class="card-body">Currently studying Interactive Arts & Technology at SFU, where I've been honing the balance between rigor and creativity — designing things that are both sharp and humane.</p>
+        <a href="contact.html" class="about-cta">
+          Say hello
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L13 3M13 3H6M13 3V10" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+      <div class="portrait-card">
+        <img src="portrait.jpeg" alt="Jay Ho" style="width: 100%; height: 100%; object-fit: cover; object-position: center top; transform: scale(1.25); transform-origin: center top;">
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="three-col">
+      <div class="content-card">
+        <div class="stat-num">3+</div>
+        <div class="stat-label">Years designing digital products across mobile, web, and brand</div>
+      </div>
+      <div class="content-card">
+        <div class="stat-num">5+</div>
+        <div class="stat-label">Projects shipped spanning UX, identity, and interactive systems</div>
+      </div>
+      <div class="content-card">
+        <div class="stat-num">SFU</div>
+        <div class="stat-label">Interactive Arts & Technology</div>
+      </div>
+    </div>
+
+    <!-- APPROACH -->
+    <div class="content-card">
+      <p class="card-eyebrow">How I work</p>
+      <h2 class="card-heading">Research first, <span class="blue">craft always</span>.</h2>
+      <p class="card-body">Good design starts with uncomfortable questions. I spend time understanding why a problem exists before reaching for solutions — mapping user flows, stress-testing assumptions, and finding the moments where friction sneaks in unnoticed.</p>
+      <div class="divider"></div>
+      <p class="card-body">From there, it's iteration. I move fast in low-fidelity to find the shape of the right answer, then slow down to make it feel polished and inevitable. Every decision gets justified — not because process is sacred, but because craft deserves reasons.</p>
+    </div>
+
+    <!-- SKILLS + INFO -->
+    <div class="two-col">
+      <div class="content-card">
+        <p class="card-eyebrow">Disciplines</p>
+        <h2 class="card-heading" style="font-size: clamp(20px, 2.2vw, 30px);">What I bring to the table</h2>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+          <span class="pill">UI Design</span>
+          <span class="pill">UX Research</span>
+          <span class="pill">Interaction Design</span>
+          <span class="pill">Design Systems</span>
+          <span class="pill">Prototyping</span>
+          <span class="pill">Branding</span>
+          <span class="pill">Motion</span>
+          <span class="pill">Web</span>
+        </div>
+        <div class="divider"></div>
+        <p class="card-eyebrow" style="margin-bottom: 12px;">Tools</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span class="pill">Figma</span>
+          <span class="pill">Framer</span>
+          <span class="pill">Adobe PS</span>
+          <span class="pill">Onshape</span>
+          <span class="pill">Rhino</span>
+          <span class="pill">HTML · CSS</span>
+        </div>
+      </div>
+      <div class="content-card">
+        <p class="card-eyebrow">Details</p>
+        <ul class="info-list">
+          <li><span class="lbl">Based in</span><span class="val">Vancouver, BC</span></li>
+          <li><span class="lbl">Education</span><span class="val">SFU — Interactive Arts & Technology</span></li>
+          <li><span class="lbl">Discipline</span><span class="val">UI/UX · Product Design</span></li>
+          <li><span class="lbl">Currently</span><span class="val">Open to new roles</span></li>
+          <li><span class="lbl">Languages</span><span class="val">English · Cantonese</span></li>
+          <li><span class="lbl">LinkedIn</span><span class="val"><a href="https://www.linkedin.com/in/jay-ho-520134220/" target="_blank">linkedin.com/in/jay-ho</a></span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- OUTSIDE WORK -->
+    <div class="content-card">
+      <p class="card-eyebrow">Outside of work</p>
+      <h2 class="card-heading">Life beyond the <span class="blue">screen</span>.</h2>
+      <div class="three-col" style="margin-top: 8px; gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 28px; line-height: 1;">🎾</div>
+          <p style="font-size: 13px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink);">Tennis</p>
+          <p class="card-body" style="font-size: 14px;">On the court as much as possible. Tennis keeps me competitive and teaches me the same lesson design does — consistency beats brilliance.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 28px; line-height: 1;">⛳</div>
+          <p style="font-size: 13px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink);">Golf</p>
+          <p class="card-body" style="font-size: 14px;">Golf is an exercise in patience and precision. Two things I try to bring back to the design table every time I play a frustrating round.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 28px; line-height: 1;">🏓</div>
+          <p style="font-size: 13px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink);">Pickleball</p>
+          <p class="card-body" style="font-size: 14px;">The newest obsession. Fast, social, and endlessly fun — pickleball is proof that the best experiences are the ones that feel effortless.</p>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="two-col" style="gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 28px; line-height: 1;">🎮</div>
+          <p style="font-size: 13px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink);">Gaming</p>
+          <p class="card-body" style="font-size: 14px;">Games are where I go to experience other designers' decisions up close. The best ones are invisible in their craft — you just feel the intention.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 28px; line-height: 1;">📷</div>
+          <p style="font-size: 13px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink);">Documenting life</p>
+          <p class="card-body" style="font-size: 14px;">I film and photograph the day-to-day — meals, trips, moments. Documenting things trains you to notice what's worth preserving, which turns out to be a pretty useful design skill.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- VALUES -->
+    <div class="content-card">
+      <p class="card-eyebrow">What I believe</p>
+      <h2 class="card-heading">Design is a <span class="blue">responsibility</span>.</h2>
+      <div class="two-col" style="margin-top: 8px; gap: 40px;">
+        <div>
+          <p class="card-body"><strong style="font-weight: 500; color: var(--ink);">Clarity over cleverness.</strong><br>The best interface is the one that disappears. I resist the temptation to add complexity when simplicity is available.</p>
+        </div>
+        <div>
+          <p class="card-body"><strong style="font-weight: 500; color: var(--ink);">People, not users.</strong><br>Behind every screen is a human with context, habits, and frustrations. Design that forgets this fails regardless of how it looks.</p>
+        </div>
+        <div>
+          <p class="card-body"><strong style="font-weight: 500; color: var(--ink);">Details compound.</strong><br>Small inconsistencies erode trust. Getting the micro-moments right is how you earn the macro-perception of quality.</p>
+        </div>
+        <div>
+          <p class="card-body"><strong style="font-weight: 500; color: var(--ink);">Ship and learn.</strong><br>Perfect is the enemy of shipped. I value getting work into the world, learning from it, and iterating with real signal.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SEE MY WORK -->
+  <div class="next-project">
+    <div class="section-label">Selected Work</div>
+    <a href="work.html" class="next-card" id="next-card">
+      <div>
+        <div class="next-label">See my work</div>
+        <div class="next-title">Work</div>
+      </div>
+      <div class="next-arrow">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13L13 3M13 3H6M13 3V10" stroke="#1a1a18" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">Jay Ho — 2025</div>
+    <ul class="footer-links">
+      <li><a href="mailto:jayho5403@gmail.com">Email</a></li>
+      <li><a href="https://www.linkedin.com/in/jay-ho-520134220/" target="_blank">LinkedIn</a></li>
+      <li><a href="resume.html">Resume</a></li>
+    </ul>
+    <div class="footer-right">Designed with intention.</div>
+  </footer>
+
+  <script>
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+    document.querySelectorAll('a, .next-card').forEach(el => { el.addEventListener('mouseenter', () => cursor.classList.add('hover')); el.addEventListener('mouseleave', () => cursor.classList.remove('hover')); });
+
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => { navbar.classList.toggle('scrolled', window.scrollY > 40); });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 100);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.content-card, .portrait-card, .next-card').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

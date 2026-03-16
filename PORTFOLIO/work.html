@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Work — Jay Ho</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:    #1a1a18;
+      --muted:  #6b6860;
+      --accent: #C8A96E;
+      --blue:   #6B8FAE;
+      --font:   -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #D4D8E0;
+      color: var(--ink);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      cursor: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* BG MESH */
+    .bg-mesh {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 20%, rgba(195,205,225,0.65) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 70% at 90% 10%, rgba(180,195,220,0.4)  0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 50% 90%, rgba(185,200,215,0.45) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 70%, rgba(195,200,230,0.35) 0%, transparent 55%),
+        #D4D8E0;
+    }
+
+    /* CURSOR */
+    #cursor {
+      position: fixed; width: 8px; height: 8px;
+      background: var(--ink); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: width .25s ease, height .25s ease, opacity .25s ease;
+    }
+    #cursor.hover { width: 36px; height: 36px; opacity: .12; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 48px;
+      border-bottom: 1px solid transparent;
+      transition: all .4s ease;
+    }
+    nav.scrolled {
+      padding: 18px 48px;
+      background: rgba(212,216,224,0.7);
+      backdrop-filter: blur(24px) saturate(1.5);
+      -webkit-backdrop-filter: blur(24px) saturate(1.5);
+      border-bottom: 1px solid rgba(255,255,255,0.55);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+    }
+    .nav-links { display: flex; gap: 32px; list-style: none; text-align: left; align-items: center; }
+    .nav-links li { display: flex; align-items: center; }
+    .nav-links a {
+      font-size: 13px; font-weight: 400;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      transition: color .2s;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+    nav > a {
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .3s ease;
+    }
+    nav > a:hover { transform: scale(1.12); }
+
+    /* PAGE */
+    .page {
+      position: relative; z-index: 1;
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 48px 120px;
+    }
+
+    /* HERO */
+    .hero {
+      position: relative; z-index: 1;
+      padding: 0 48px;
+      display: flex; flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .hero-card {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(4px) saturate(1.1);
+      -webkit-backdrop-filter: blur(4px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 4px 32px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35);
+      border-radius: 24px;
+      padding: 52px 80px 56px;
+      margin-bottom: 20px;
+      display: flex; flex-direction: column; gap: 32px;
+    }
+
+    .hero-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0; animation: fadeUp .6s ease .1s forwards;
+    }
+
+    .hero-count {
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0; animation: fadeUp .6s ease .15s forwards;
+    }
+
+    .hero-title {
+      font-size: clamp(52px, 8vw, 112px);
+      font-weight: 200; letter-spacing: -0.04em;
+      line-height: 1.0;
+      opacity: 0; animation: fadeUp .9s cubic-bezier(0.16,1,0.3,1) .25s forwards;
+    }
+    .hero-title .blue { color: var(--blue); }
+
+    .hero-desc {
+      font-size: clamp(15px, 1.6vw, 20px);
+      font-weight: 300; color: var(--muted);
+      letter-spacing: -0.01em; max-width: 560px;
+      opacity: 0; animation: fadeUp .7s ease .5s forwards;
+    }
+
+    .hero-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 22px 0; border-top: 1px solid rgba(0,0,0,0.08);
+      opacity: 0; animation: fadeUp .7s ease .8s forwards;
+    }
+    .hero-footer-left { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .scroll-hint { display: flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .scroll-line { width: 40px; height: 1px; background: rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+    .scroll-line::after { content: ''; position: absolute; inset: 0; background: var(--ink); animation: scanLine 2s ease-in-out 1.5s infinite; }
+
+
+    /* WORK GRID */
+    .work-grid {
+      position: relative; z-index: 1;
+      padding: 80px 48px 0 48px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    /* PROJECT CARD — FEATURED (large) */
+    .project-card {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(4px) saturate(1.1);
+      -webkit-backdrop-filter: blur(4px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.35);
+      border-radius: 24px;
+      overflow: hidden;
+      text-decoration: none; color: inherit;
+      display: block;
+      transition: transform 1s cubic-bezier(0.42, 0, 0.58, 1), background .8s cubic-bezier(0.42, 0, 0.58, 1), box-shadow .9s cubic-bezier(0.42, 0, 0.58, 1);
+      opacity: 0; transform: translateY(24px);
+    }
+    .project-card.visible { animation: fadeUp .8s cubic-bezier(0.16,1,0.3,1) forwards; }
+    .project-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255,255,255,0.2);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.09), inset 0 1px 0 rgba(255,255,255,0.4);
+    }
+
+    .project-card-featured {
+      display: grid; grid-template-columns: 1fr 1fr;
+    }
+
+    .project-image {
+      aspect-ratio: 4/3;
+      background: rgba(30,50,60,0.8);
+      overflow: hidden; position: relative;
+    }
+    .project-image img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s cubic-bezier(0.16,1,0.3,1); }
+    .project-card:hover .project-image img { transform: scale(1.04); }
+    .project-image-placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .img-label {
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(255,255,255,.25); border: 1.5px dashed rgba(255,255,255,.18);
+      padding: 8px 18px; border-radius: 100px;
+    }
+
+    .project-info {
+      padding: 48px 52px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+
+    .project-info-top { display: flex; flex-direction: column; gap: 20px; }
+
+    .project-tag-row { display: flex; justify-content: space-between; align-items: center; }
+    .project-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag {
+      font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      background: rgba(0,0,0,0.07); border-radius: 100px;
+      padding: 4px 10px; color: var(--muted);
+    }
+    .project-year {
+      font-size: 11px; letter-spacing: 0.08em; color: var(--muted);
+    }
+
+    .project-title {
+      font-size: clamp(28px, 3.5vw, 52px);
+      font-weight: 200; letter-spacing: -0.035em;
+      line-height: 1.1;
+    }
+    .project-title .blue { color: var(--blue); }
+    .project-title .accent { color: var(--accent); }
+
+    .project-desc {
+      font-size: 14px; font-weight: 300;
+      color: var(--muted); line-height: 1.7;
+      max-width: 400px;
+    }
+
+    .project-info-bottom {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      padding-top: 32px;
+      border-top: 1px solid rgba(0,0,0,0.07);
+      margin-top: 32px;
+    }
+
+    .project-meta { display: flex; gap: 28px; flex-wrap: wrap; }
+    .meta-item { display: flex; flex-direction: column; gap: 3px; }
+    .meta-label { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .meta-value { font-size: 13px; font-weight: 400; }
+
+    .project-arrow {
+      flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.75);
+      backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;
+      transition: background .3s, transform .3s;
+    }
+    .project-card:hover .project-arrow { background: var(--ink); transform: rotate(45deg); }
+    .project-card:hover .project-arrow path { stroke: white; }
+
+    /* PROJECT CARD — STANDARD (stacked) */
+    .project-card-standard {
+      display: flex; flex-direction: column;
+    }
+    .project-card-standard .project-image { aspect-ratio: 16/7; }
+    .project-card-standard .project-info {
+      padding: 36px 48px 40px;
+      flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 40px;
+    }
+    .project-card-standard .project-info-top { flex: 1; }
+    .project-card-standard .project-info-bottom {
+      border-top: none; margin-top: 0; padding-top: 0;
+      align-self: flex-end; flex-shrink: 0;
+    }
+
+    /* TWO-COL GRID ROW */
+    .project-row-two {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    }
+    .project-row-two .project-card {
+      display: flex; flex-direction: column;
+    }
+    .project-row-two .project-image { aspect-ratio: 4/3; }
+    .project-row-two .project-info {
+      padding: 32px 40px 36px;
+    }
+    .project-row-two .project-title {
+      font-size: clamp(22px, 2.8vw, 38px);
+    }
+    .project-row-two .project-info-bottom {
+      margin-top: 24px; padding-top: 24px;
+    }
+
+    /* PALETTES PER PROJECT */
+    .bg-mec    { background: rgba(30,50,40,0.85); }
+    .bg-brand  { background: rgba(40,30,55,0.85); }
+    .bg-motion { background: rgba(20,40,55,0.85); }
+    .bg-type   { background: rgba(55,40,20,0.85); }
+
+    /* FOOTER */
+    footer {
+      position: relative; z-index: 1;
+      padding: 28px 48px;
+      margin-top: 120px;
+      border-top: 1px solid rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+    }
+    .footer-left { font-size: 14px; font-weight: 300; color: var(--muted); }
+    .footer-links { display: flex; gap: 24px; list-style: none; }
+    .footer-links a { font-size: 13px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; transition: color .2s; }
+    .footer-links a:hover { color: var(--ink); }
+    .footer-right { font-size: 12px; color: var(--muted); }
+
+    @keyframes fadeUp  { to { opacity: 1; transform: translateY(0); } }
+    @keyframes scanLine { 0% { transform: translateX(-100%); } 50% { transform: translateX(100%); } 100% { transform: translateX(100%); } }
+
+    @media (max-width: 900px) {
+      nav, nav.scrolled { padding: 18px 24px; }
+      .hero, .work-grid { padding-left: 24px; padding-right: 24px; }
+      .hero-card { padding: 40px 28px 44px; }
+      .project-card-featured { grid-template-columns: 1fr; }
+      .project-card-featured .project-image { aspect-ratio: 16/9; }
+      .project-row-two { grid-template-columns: 1fr; }
+      .project-card-standard .project-info { flex-direction: column; gap: 24px; align-items: flex-start; }
+      footer { padding: 28px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-mesh"></div>
+  <div id="cursor"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <a href="index.html" aria-label="Jay Ho">
+      <svg width="22" height="50" viewBox="0 0 35 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M20.8651 0H13.9639V33.9625H6.9012V3.73333H0V69.0517H6.9012V40.0861H13.9639V46.17C13.9639 53.4923 12.7975 61.3008 10.4647 69.5952L7.54867 79.8011H14.6443L17.6575 69.5952C19.7959 62.208 20.8651 54.3669 20.8651 46.0728V40.0861H27.702V69.0517H34.6667V3.73333H27.702V33.9625H20.8651V0Z" fill="#1a1a18"/>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li><a href="work.html" class="active">Work</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="work">
+    <div style="display:flex;flex-direction:column;padding-top:100px;">
+      <div class="hero-card">
+        <div class="hero-top">
+          <span class="hero-eyebrow">Selected Work</span>
+          <span class="hero-count">03 Projects</span>
+        </div>
+        <h1 class="hero-title">Design <span class="blue">&</span><br>Direction.</h1>
+        <p class="hero-desc">A collection of UX, brand, and digital work — built with intention, shaped by research, and designed to earn trust.</p>
+      </div>
+    </div>
+    <div class="hero-footer">
+      <span class="hero-footer-left">Jay Ho &nbsp;·&nbsp; Vancouver, BC</span>
+      <div class="scroll-hint">
+        <div class="scroll-line"></div>
+        Scroll
+      </div>
+    </div>
+  </section>
+
+
+  <!-- WORK GRID -->
+  <div class="work-grid" id="work-grid">
+
+    <!-- PROJECT 01 — MEC × SFU Featured, two-col -->
+    <a href="mec-sfu.html" class="project-card project-card-featured" data-tags="ux">
+      <div class="project-image bg-mec">
+        <img src="5 - Workshop Agenda.png" alt="MEC x SFU">
+      </div>
+      <div class="project-info">
+        <div class="project-info-top">
+          <div class="project-tag-row">
+            <div class="project-tags">
+              <span class="tag">UX</span>
+              <span class="tag">Mobile</span>
+              <span class="tag">Research</span>
+            </div>
+            <span class="project-year">2025</span>
+          </div>
+          <h2 class="project-title">MEC <span class="blue">×</span> SFU</h2>
+          <p class="project-desc">Reimagining the community and events experience for Mountain Equipment Company — from discovery to post-event engagement.</p>
+        </div>
+        <div class="project-info-bottom">
+          <div class="project-meta">
+            <div class="meta-item">
+              <span class="meta-label">Role</span>
+              <span class="meta-value">UI / UX</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Duration</span>
+              <span class="meta-value">12 Weeks</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Team</span>
+              <span class="meta-value">4 Members</span>
+            </div>
+          </div>
+          <div class="project-arrow">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 13L13 3M13 3H6M13 3V10" stroke="#1a1a18" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <!-- PROJECTS 02 + 03 — DDA + Jackalope Two-col row -->
+    <div class="project-row-two">
+      <a href="dutch-design-awards.html" class="project-card" data-tags="branding">
+        <div class="project-image bg-brand">
+          <img src="Wireframe - 16 1.png" alt="Dutch Design Awards">
+        </div>
+        <div class="project-info">
+          <div class="project-info-top">
+            <div class="project-tag-row">
+              <div class="project-tags">
+                <span class="tag">Branding</span>
+                <span class="tag">Web</span>
+              </div>
+              <span class="project-year">2024</span>
+            </div>
+            <h2 class="project-title">Dutch Design Awards</h2>
+            <p class="project-desc">Rebranding and microsite for DDA — flexible identity system across print, web, and exhibition.</p>
+          </div>
+          <div class="project-info-bottom">
+            <div class="project-meta">
+              <div class="meta-item">
+                <span class="meta-label">Role</span>
+                <span class="meta-value">Branding</span>
+              </div>
+            </div>
+            <div class="project-arrow">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 13L13 3M13 3H6M13 3V10" stroke="#1a1a18" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <a href="jackalope.html" class="project-card" data-tags="product">
+        <div class="project-image bg-motion">
+          <img src="Jackalope-app-screens.png" alt="Jackalope">
+        </div>
+        <div class="project-info">
+          <div class="project-info-top">
+            <div class="project-tag-row">
+              <div class="project-tags">
+                <span class="tag">Product</span>
+                <span class="tag">Community</span>
+              </div>
+              <span class="project-year">2025</span>
+            </div>
+            <h2 class="project-title">Jackalope</h2>
+            <p class="project-desc">Vancouver community app for local events, groups, and mutual-aid opportunities in neighbourhoods.</p>
+          </div>
+          <div class="project-info-bottom">
+            <div class="project-meta">
+              <div class="meta-item">
+                <span class="meta-label">Role</span>
+                <span class="meta-value">Product Design</span>
+              </div>
+            </div>
+            <div class="project-arrow">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 13L13 3M13 3H6M13 3V10" stroke="#1a1a18" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+  </div>
+
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">Jay Ho — 2025</div>
+    <ul class="footer-links">
+      <li><a href="mailto:jayho5403@gmail.com">Email</a></li>
+      <li><a href="https://www.linkedin.com/in/jay-ho-520134220/" target="_blank">LinkedIn</a></li>
+      <li><a href="resume.html">Resume</a></li>
+    </ul>
+    <div class="footer-right">Designed with intention.</div>
+  </footer>
+
+  <script>
+    // Cursor
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, button, .project-card').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+
+    // Scrolled nav
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // Intersection observer for scroll reveals
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.project-card').forEach(el => observer.observe(el));
+
+  </script>
+</body>
+</html>
