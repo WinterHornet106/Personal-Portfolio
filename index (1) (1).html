@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI & The Future of Work</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a0a;
+      --bg2:      #101010;
+      --card:     #161616;
+      --card-b:   rgba(200,245,60,0.1);
+      --text:     #b8b4ac;
+      --dim:      #4e4e4e;
+      --bright:   #f0ede8;
+      --accent:   #c8f53c;
+      --accent-g: rgba(200,245,60,0.07);
+      --purple:   #c8f53c;
+      --purple-g: rgba(200,245,60,0.07);
+      --green:    #00d68f;
+      --red:      #ff3b4e;
+      --amber:    #ffb347;
+      --grid:     rgba(255,255,255,0.035);
+      --max:      880px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── GRAIN TEXTURE ── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 9999;
+      opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    /* ── CUSTOM SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+    /* ── PROGRESS BAR ── */
+    #progress {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--accent);
+      z-index: 300; transition: width 0.08s linear;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 2.5rem;
+      background: rgba(10,10,10,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(200,245,60,0.1);
+    }
+
+    .nav-brand {
+      font-size: 0.68rem; font-weight: 800;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .nav-dots { display: flex; gap: 8px; align-items: center; }
+
+    .nav-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--dim); cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .nav-dot.active { background: var(--accent); transform: scale(1.6); }
+    .nav-dot:hover  { background: var(--text); }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 7rem 2.5rem 5rem;
+      position: relative; overflow: hidden;
+      background: var(--bg);
+    }
+
+    #hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 58px 58px;
+      pointer-events: none;
+    }
+
+    #hero::after {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 55% 50% at 72% 28%, rgba(200,245,60,0.07) 0%, transparent 65%),
+        radial-gradient(ellipse 38% 35% at 8% 82%, rgba(0,214,143,0.05) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    .hero-inner { max-width: var(--max); margin: 0 auto; width: 100%; position: relative; z-index: 1; }
+
+    .eyebrow {
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.26em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 1.5rem;
+      display: inline-flex; align-items: center; gap: 0.65rem;
+    }
+    .eyebrow::before {
+      content: '';
+      display: inline-block; width: 22px; height: 1px;
+      background: var(--accent); flex-shrink: 0;
+    }
+
+    h1.hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.6rem, 6.5vw, 4.8rem);
+      font-weight: 900; line-height: 1.08; color: var(--bright);
+      margin-bottom: 1.5rem;
+    }
+
+    h1.hero-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: 1.05rem; font-weight: 300; color: var(--dim);
+      max-width: 560px; line-height: 1.85; margin-bottom: 3rem;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem; margin-bottom: 3rem;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-top: 2px solid var(--accent);
+      border-radius: 4px; padding: 1.4rem 1.6rem;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.5);
+    }
+
+    .stat-num {
+      font-size: 2rem; font-weight: 700; color: var(--bright);
+      font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+    }
+
+    .stat-label {
+      font-size: 0.78rem; color: var(--dim);
+      margin-top: 0.3rem; line-height: 1.45;
+    }
+
+    .scroll-hint {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.78rem; letter-spacing: 0.1em; color: var(--dim);
+    }
+
+    .arrow { display: inline-block; animation: bob 1.6s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+
+    /* ── GENERIC SECTION ── */
+    .act {
+      padding: 6rem 2.5rem;
+      position: relative;
+    }
+
+    .act:nth-child(even) { background: var(--bg2); }
+
+    .act-inner { max-width: var(--max); margin: 0 auto; }
+
+    .act-num {
+      display: inline-flex; align-items: center; gap: 0.65rem;
+      font-size: 0.68rem; font-weight: 800;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 1rem;
+    }
+    .act-num::before {
+      content: '';
+      display: block; width: 20px; height: 2px;
+      background: var(--accent);
+    }
+
+    h2.act-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.9rem, 4vw, 2.9rem);
+      font-weight: 700; line-height: 1.18; color: var(--bright);
+      margin-bottom: 1rem;
+    }
+
+    .act-body {
+      font-size: 1rem; color: var(--dim);
+      max-width: 640px; line-height: 1.82; margin-bottom: 2.5rem;
+    }
+
+    /* ── CHART CARD ── */
+    .chart-card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.055);
+      border-left: 2px solid var(--accent);
+      border-radius: 4px; padding: 1.75rem 2rem; margin-bottom: 1.25rem;
+      transition: border-left-color 0.25s ease;
+    }
+    .chart-card:hover { border-left-color: rgba(200,245,60,0.5); }
+
+    .chart-label {
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 1.25rem;
+    }
+
+    .chart-wrap { position: relative; }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .lg-item {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.78rem; color: var(--dim);
+    }
+
+    .lg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    /* ── INSIGHT BOX ── */
+    .insight {
+      background: var(--accent-g);
+      border: 1px solid rgba(200,245,60,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px; padding: 1.2rem 1.5rem;
+      font-size: 0.9rem; color: #8fa860; line-height: 1.65;
+      margin-top: 0.25rem;
+    }
+
+    .insight b {
+      display: block; color: var(--accent);
+      font-size: 0.68rem; letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: 0.4rem;
+    }
+
+    /* ── PULL QUOTE ── */
+    .pull-quote {
+      padding: 4.5rem 2.5rem;
+      background: var(--accent);
+      text-align: center;
+    }
+
+    .pull-quote blockquote {
+      max-width: 680px; margin: 0 auto;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.35rem, 2.8vw, 1.95rem);
+      font-style: italic; color: #0a0a0a; line-height: 1.5;
+    }
+
+    .pull-quote blockquote::before {
+      content: '\201C';
+      display: block;
+      font-size: 4.5rem; line-height: 0.7;
+      color: rgba(0,0,0,0.15);
+      font-family: 'Playfair Display', serif;
+      margin-bottom: 0.6rem;
+    }
+
+    .pull-quote blockquote em {
+      font-style: normal; font-weight: 900;
+      color: rgba(0,0,0,0.5);
+    }
+
+    /* ── CONCLUSION ── */
+    #conclusion {
+      padding: 6rem 2.5rem;
+      background: var(--bg2);
+    }
+
+    .conclusion-inner { max-width: var(--max); margin: 0 auto; }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem; margin-top: 2.5rem;
+    }
+
+    .takeaway {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-top: 2px solid rgba(200,245,60,0.25);
+      border-radius: 4px; padding: 1.6rem;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-top-color 0.25s ease;
+    }
+    .takeaway:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.45);
+      border-top-color: var(--accent);
+    }
+
+    .takeaway .icon { font-size: 1.6rem; margin-bottom: 0.75rem; }
+
+    .takeaway h4 {
+      font-size: 0.93rem; font-weight: 600; color: var(--bright);
+      margin-bottom: 0.5rem;
+    }
+
+    .takeaway p { font-size: 0.84rem; color: var(--dim); line-height: 1.6; }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 2.5rem 2.5rem;
+      background: #000;
+      border-top: 1px solid rgba(200,245,60,0.1);
+    }
+
+    footer .fi {
+      max-width: var(--max); margin: 0 auto;
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 0.75rem;
+    }
+
+    footer p { font-size: 0.78rem; color: var(--dim); }
+    footer p.authors { color: var(--accent); font-weight: 600; letter-spacing: 0.04em; }
+
+    /* ── FADE-IN ANIMATION ── */
+    .fi-anim {
+      opacity: 0; transform: translateY(22px);
+      transition: opacity 0.72s ease, transform 0.72s ease;
+    }
+    .fi-anim.show { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 620px) {
+      .stats-row { grid-template-columns: 1fr; }
+      nav { padding: 0.85rem 1.25rem; }
+      .act, #hero { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .chart-card { padding: 1.1rem 1.1rem; }
+      .nav-dots { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav>
+  <span class="nav-brand">AI & The Future of Work</span>
+  <div class="nav-dots">
+    <div class="nav-dot active" data-sec="hero"       title="Introduction"></div>
+    <div class="nav-dot"        data-sec="act1"       title="AI Adoption"></div>
+    <div class="nav-dot"        data-sec="act2"       title="Job Growth"></div>
+    <div class="nav-dot"        data-sec="act3"       title="Automation Risk"></div>
+    <div class="nav-dot"        data-sec="act4"       title="Skills"></div>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">
+      AI Isn't Just<br>
+      for <em>Tech People</em><br>
+      Anymore.
+    </h1>
+    <p class="hero-sub">
+    Our project moves past the headlines to uncover how AI is truly reshaping the global workforce.
+     By identifying where roles are being replaced, 
+    where they are being elevated, and which industries are seeing the most significant 
+    growth. It offers a clear, data-driven look at the new reality of employment in an AI-driven world.
+    </p>
+
+    <p class="scroll-hint">Scroll to explore &nbsp;<span class="arrow">↓</span></p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     ACT 2 — JOB GROWTH
+═══════════════════════════════════════════ -->
+<section class="act" id="act2">
+  <div class="act-inner">
+    <p class="act-num">01 — Job Growth Outlook</p>
+    <h2 class="act-title">More AI Doesn't<br>Mean More Jobs.</h2>
+    <p class="act-body">
+      And here's the irony that emerges from this data: Industries that use the 
+      most AI are actually those where there is job loss. Manufacturing, which is 
+      one of the highest industries in adopting AI, is projected to have the largest 
+      fall with almost 50% of its jobs at risk. The finance and education sectors, which 
+      use lesser AI than manufacturing, have more job opportunities.
+    </p>
+
+    <div class="legend fi-anim">
+      <div class="lg-item"><div class="lg-dot" style="background:#10b981"></div> Growth</div>
+      <div class="lg-item"><div class="lg-dot" style="background:#475569"></div> Stable</div>
+      <div class="lg-item"><div class="lg-dot" style="background:#f43f5e"></div> Decline</div>
+    </div>
+
+    <div class="chart-card fi-anim">
+      <p class="chart-label">Job Growth Projection by Industry — % of roles</p>
+      <div class="chart-wrap" style="height:340px">
+        <canvas id="cGrowth"></canvas>
+      </div>
+    </div>
+
+    <p class="act-body">
+      This graph analyzes the projected job growth, stability, and decline in various sectors.
+       The sectors that will experience high job growth include Finance and Education, while sectors 
+       that will experience a high rate of decline include Retail and Energy.  
+      </p>
+
+    <div class="insight fi-anim">
+      <b>Key Insight</b>
+      Manufacturing has been a leader in adopting AI technology but still projects a 46.6% 
+      decline in jobs – worse than any other industry. Financial services have experienced 
+      43.4% growth, while education saw a 42.1% increase in employment opportunities due to AI.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     ACT 2 — AUTOMATION RISK
+═══════════════════════════════════════════ -->
+<section class="act" id="act3">
+  <div class="act-inner">
+    <p class="act-num">02 — Automation Risk</p>
+    <h2 class="act-title">Nobody Is Completely Safe.<br>Not Even AI Experts.</h2>
+    <p class="act-body">
+      The data challenges conventional wisdom: technical roles like Cybersecurity and Product Management show higher exposure to automation than many operational roles. This suggests that the most protected positions are those defined by layered human judgment rather than technical execution alone    </p>
+
+    <div class="legend fi-anim">
+      <div class="lg-item"><div class="lg-dot" style="background:#f43f5e"></div> High Risk</div>
+      <div class="lg-item"><div class="lg-dot" style="background:#f59e0b"></div> Medium</div>
+      <div class="lg-item"><div class="lg-dot" style="background:#10b981"></div> Low Risk</div>
+    </div>
+
+    <div class="chart-card fi-anim">
+      <p class="chart-label">Automation Risk Level by Job Title — % of roles</p>
+      <div class="chart-wrap" style="height:340px">
+        <canvas id="cRisk"></canvas>
+      </div>
+    </div>
+
+    <p class="act-body">
+      The distribution of risk across these ten roles suggests a new hierarchy of automation. Positions centered on high-level strategy and organizational culture show the highest "low risk" percentages, whereas roles focused on technical systems and project coordination face a more immediate transition toward AI integration.
+    </p>
+
+    <div class="insight fi-anim">
+      <b>Key Insight</b>
+      Cybersecurity Analysts face 41.8% high-risk exposure — more than Sales Managers or Marketing Specialists. Operations Managers show the lowest high-risk rate at just 22.7%. Operational complexity may be the job protection AI can't easily replicate.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     PULL QUOTE
+═══════════════════════════════════════════ -->
+<div class="pull-quote">
+  <blockquote>
+    AI is no longer a technical niche; it is the new universal language of the global workforce  </blockquote>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     ACT 3 — SKILLS
+═══════════════════════════════════════════ -->
+<section class="act" id="act4">
+  <div class="act-inner">
+    <p class="act-num">03 — In-Demand Skills</p>
+    <h2 class="act-title">The AI Era Rewards Both<br>Coders and Coordinators.</h2>
+    <p class="act-body">
+      If you expected coding to dominate, you're half right. Python ties exactly with Project Management at the top of the skills chart. The data tells us the AI-augmented workforce isn't purely technical — it's hybrid. But not all skills offer equal protection. A closer look at automation risk by skill reveals that leading with Sales is the most exposed position you can be in.
+    </p>
+
+    <div class="chart-card fi-anim">
+      <p class="chart-label">Most In-Demand Skills — job postings count</p>
+      <div class="chart-wrap" style="height:320px">
+        <canvas id="cSkills"></canvas>
+      </div>
+    </div>
+
+    <p class="act-body">
+      This graph shows that while Python is highly in demand, Project Management is just as important. The presence of skills like UX/UI Design, Data Analysis, and Communication highlights that the AI job market values a balance of technical and non-technical abilities.
+      The top 10 most in-demand skills across all industries show a blend of technical and interpersonal competencies. Project Management and Python lead with 60 job postings each, followed closely by Cybersecurity. Communication, while essential, ranks lowest in demand, suggesting that technical fluency is becoming a baseline expectation in the AI era.
+    
+    <div class="insight fi-anim">
+      <b>Key Insight</b>
+      Success in the AI job market depends on a combination of technical skills and strong human-centered abilities like communication and project management.    </div>
+  </div>
+</section>
+
+
+
+
+
+<!-- ═══════════════════════════════════════════
+     CONCLUSION
+═══════════════════════════════════════════ -->
+<section id="conclusion">
+  <div class="conclusion-inner">
+    <p class="act-num">The Takeaway</p>
+    <h2 class="act-title">What This Means for You</h2>
+    <p class="act-body">
+      The AI job market isn't the zero-sum replacement story the headlines suggest. It's a more nuanced reshuffling — and three findings should inform every worker's strategy going forward.
+    </p>
+    <div class="cards-grid">
+      <div class="takeaway fi-anim">
+        <div class="icon">🏥</div>
+        <h4>AI is everywhere, not just tech</h4>
+        <p>Healthcare, Manufacturing, and Education are the real frontiers of AI adoption. If you're in a "non-tech" field, AI has already arrived in your workplace.</p>
+      </div>
+      <div class="takeaway fi-anim">
+        <div class="icon">🔀</div>
+        <h4>Hybrid skills are the moat</h4>
+        <p>Project Management and Python tied at the top. The workers who thrive combine technical fluency with human coordination — neither alone is enough.</p>
+      </div>
+      <div class="takeaway fi-anim">
+        <div class="icon">📈</div>
+        <h4>Judgment, not code, drives growth</h4>
+        <p>Finance and Education lead job growth because they require nuanced human judgment AI can augment but not replace. Operational complexity is your career shield.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer>
+  <div class="fi">
+    <div>
+      <p class="authors">Zahra Khosravi &nbsp;·&nbsp; Jay Ho &nbsp;·&nbsp; Esther Macaulay</p>
+      <p>IAT 355 &nbsp;·&nbsp; AI Job Market Analysis &nbsp;·&nbsp; Final Project</p>
+    </div>
+    <p>Dataset: AI Job Market Insights &nbsp;</p>
+  </div>
+</footer>
+
+
+<script>
+/* ──────────────────────────────────────────
+   SHARED CHART DEFAULTS
+────────────────────────────────────────── */
+Chart.defaults.color = '#4e4e4e';
+Chart.defaults.font.family = 'Inter, sans-serif';
+
+const C = {
+  highAI:  '#8b5cf6',
+  medAI:   '#a78bfa',
+  lowAI:   '#2e2b3a',
+  growth:  '#00d68f',
+  stable:  '#374151',
+  decline: '#ff3b4e',
+  hiRisk:  '#ff3b4e',
+  mdRisk:  '#ffb347',
+  loRisk:  '#00d68f',
+  grid:    'rgba(255,255,255,0.04)',
+  tip: {
+    backgroundColor: '#0a0a0a',
+    titleColor:      '#f0ede8',
+    bodyColor:       '#6b6b6b',
+    borderColor:     'rgba(200,245,60,0.25)',
+    borderWidth: 1, padding: 12,
+  }
+};
+
+function stackedHBar(canvasId, labels, datasets, tipFmt) {
+  return new Chart(document.getElementById(canvasId), {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 900, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...C.tip,
+          callbacks: { label: ctx => tipFmt(ctx) }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true, max: 100,
+          grid: { color: C.grid },
+          border: { color: 'transparent' },
+          ticks: { font: { size: 11 }, callback: v => v + '%' }
+        },
+        y: {
+          stacked: true,
+          grid: { display: false },
+          border: { color: 'transparent' },
+          ticks: { color: '#909090', font: { size: 11.5 } }
+        }
+      }
+    }
+  });
+}
+
+/* ──────────────────────────────────────────
+   CHART 1  — AI ADOPTION BY INDUSTRY
+   sorted by High% desc
+────────────────────────────────────────── */
+stackedHBar(
+  'cAdoption',
+  ['Healthcare','Retail','Transportation','Energy','Manufacturing','Telecom','Finance','Education','Entertainment','Technology'],
+  [
+    { label:'High',   data:[40.5,30.4,30.8,30.6,29.3,28.3,28.3,28.1,27.7,23.2], backgroundColor:C.highAI },
+    { label:'Medium', data:[35.7,41.3,28.2,28.6,39.7,30.2,35.8,31.6,36.2,48.2], backgroundColor:C.medAI  },
+    { label:'Low',    data:[23.8,28.3,41.0,40.8,31.0,41.5,35.9,40.4,36.2,28.6], backgroundColor:C.lowAI  },
+  ],
+  ctx => ` ${ctx.dataset.label} AI: ${ctx.parsed.x.toFixed(1)}%`
+);
+
+/* ──────────────────────────────────────────
+   CHART 2  — JOB GROWTH BY INDUSTRY
+   sorted by Growth% desc
+────────────────────────────────────────── */
+new Chart(document.getElementById('cGrowth'), {
+  type: 'bar',
+  data: {
+    labels: ['Finance','Education','Entertainment','Transportation','Healthcare','Manufacturing','Technology','Telecom','Energy','Retail'],
+    datasets: [
+      { label:'Growth',  data:[43.4,42.1,36.2,35.9,35.7,34.5,32.1,32.1,24.5,19.6], backgroundColor:C.growth  },
+      { label:'Stable',  data:[28.3,29.8,25.5,38.5,33.3,19.0,33.9,45.3,34.7,39.1], backgroundColor:C.stable  },
+      { label:'Decline', data:[28.3,28.1,38.3,25.6,31.0,46.6,33.9,22.6,40.8,41.3], backgroundColor:C.decline },
+    ]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 900, easing: 'easeOutQuart' },
+    plugins: {
+      datalabels: {
+        anchor: 'center',
+        align: 'center',
+        color: (context) => {
+          const colors = ['#000', '#fff', '#fff']; // Growth (green bg), Stable (gray bg), Decline (red bg)
+          return colors[context.datasetIndex];
+        },
+        font: { size: 11, weight: '600', family: 'Inter, sans-serif' },
+        formatter: (value) => value.toFixed(1) + '%',
+        textShadow: '0 1px 2px rgba(0,0,0,0.7)',
+        display: (context) => {
+          // Hide if segment width is less than 20px
+          const barWidth = context.chart.scales.x.getPixelForValue(context.parsed.x) - context.chart.scales.x.getPixelForValue(0);
+          return barWidth > 20;
+        }
+      },
+      legend: { display: false },
+      tooltip: {
+        ...C.tip,
+        callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)}%` }
+      }
+    },
+    scales: {
+      x: {
+        stacked: true, max: 100,
+        grid: { color: C.grid },
+        border: { color: 'transparent' },
+        ticks: { font: { size: 11 }, callback: v => v + '%' }
+      },
+      y: {
+        stacked: true,
+        grid: { display: false },
+        border: { color: 'transparent' },
+        ticks: { color: '#909090', font: { size: 11.5 } }
+      }
+    }
+  }
+});
+
+/* ──────────────────────────────────────────
+   CHART 3  — AUTOMATION RISK BY ROLE
+   sorted by High% desc
+────────────────────────────────────────── */
+stackedHBar(
+  'cRisk',
+  ['Cybersecurity Analyst','Product Manager','Sales Manager','AI Researcher','Software Engineer','Marketing Specialist','UX Designer','Data Scientist','HR Manager','Operations Manager'],
+  [
+    { label:'High Risk',   data:[41.8,41.0,40.8,39.2,36.6,35.4,29.6,27.4,26.3,22.7], backgroundColor:C.hiRisk },
+    { label:'Medium Risk', data:[20.0,28.2,22.4,31.4,31.7,43.8,51.9,32.3,45.6,36.4], backgroundColor:C.mdRisk },
+    { label:'Low Risk',    data:[38.2,30.8,36.7,29.4,31.7,20.8,18.5,40.3,28.1,40.9], backgroundColor:C.loRisk },
+  ],
+  ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)}%`
+);
+
+/* ──────────────────────────────────────────
+   CHART 4a — SKILLS DEMAND
+────────────────────────────────────────── */
+new Chart(document.getElementById('cSkills'), {
+  type: 'bar',
+  data: {
+    labels: ['Project Management','Python','Cybersecurity','Machine Learning','UX/UI Design','Sales','Data Analysis','Marketing','JavaScript','Communication'],
+    datasets: [{
+      label: 'Job Postings',
+      data:  [60, 60, 58, 52, 49, 49, 49, 45, 44, 34],
+      backgroundColor: [
+        '#c8f53c','#c8f53c','#b5e035','#a3cc2f','#92b82a',
+        '#92b82a','#92b82a','#82a426','#739022','#647c1e'
+      ],
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 900, easing: 'easeOutQuart' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        ...C.tip,
+        callbacks: { label: ctx => ` Required in ${ctx.parsed.x} postings` }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: C.grid },
+        border: { color: 'transparent' },
+        ticks: { font: { size: 11 } }
+      },
+      y: {
+        grid: { display: false },
+        border: { color: 'transparent' },
+        ticks: { color: '#909090', font: { size: 11.5 } }
+      }
+    }
+  }
+});
+
+/* ──────────────────────────────────────────
+
+   SCROLL ANIMATIONS
+────────────────────────────────────────── */
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.fi-anim').forEach(el => revealObs.observe(el));
+
+/* ──────────────────────────────────────────
+   NAV DOTS
+────────────────────────────────────────── */
+const SECS = ['hero','act1','act2','act3','act4'];
+const dots = document.querySelectorAll('.nav-dot');
+
+const secObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const idx = SECS.indexOf(e.target.id);
+      if (idx !== -1) dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.45 });
+
+SECS.forEach(id => { const el = document.getElementById(id); if (el) secObs.observe(el); });
+
+dots.forEach((dot, i) => {
+  dot.addEventListener('click', () =>
+    document.getElementById(SECS[i])?.scrollIntoView({ behavior: 'smooth' })
+  );
+});
+
+/* ──────────────────────────────────────────
+   PROGRESS BAR
+────────────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+  document.getElementById('progress').style.width = pct + '%';
+}, { passive: true });
+
+/* ──────────────────────────────────────────
+   COUNTER ANIMATION
+────────────────────────────────────────── */
+const counterEl = document.getElementById('counter');
+const cObs = new IntersectionObserver(entries => {
+  if (!entries[0].isIntersecting) return;
+  let n = 0;
+  const id = setInterval(() => {
+    n = Math.min(n + 9, 500);
+    counterEl.textContent = n;
+    if (n >= 500) clearInterval(id);
+  }, 18);
+  cObs.disconnect();
+});
+cObs.observe(counterEl);
+</script>
+</body>
+</html>
